@@ -40,6 +40,21 @@
                                 </li>
                             @endforeach
                         </ul>
+                        <div class="d-flex flex-wrap flex-sm-nowrap justify-content-center gap-3 pb-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search Task" name="keyword" id="search"/>
+                                <button class="btn border" type="button" id="clearButton">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            <div class="input-group" style="width: 300px">
+                                <span class="input-group-text">Sort by:</span>
+                                <select class="form-select" id="sortBy">
+                                    <option value="latest" selected>Latest</option>
+                                    <option value="oldest">Oldest</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="tab-content" id="task-tabContent">
                             @foreach($allTaskStatus as $taskStatus)
                                 <div class="tab-pane fade {{ $loop->index == 0 ? "show active" : "" }}" id="task-{{Str::slug($taskStatus)}}" role="tabpanel"

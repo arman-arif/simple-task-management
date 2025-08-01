@@ -15,6 +15,7 @@ iziToast.settings({
     position: 'topRight',
 });
 
+// SweetAlert2 default configuration
 const SwalConfirm = Swal.mixin({
     title: "Are you sure?",
     text: "You won't be able to revert this!",
@@ -22,7 +23,7 @@ const SwalConfirm = Swal.mixin({
     showCancelButton: true,
     confirmButtonColor: "#3085d6",
     cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, delete it!"
+    confirmButtonText: "Yes, do it!"
 });
 
 const Toast = {
@@ -96,17 +97,32 @@ const Ajax = {
     }
 }
 
+// Debounce function to limit the rate of function calls
+const debounce = (func, delay) => {
+    let timeoutId;
+    return function(...args) {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    }
+}
+
 const App = {
     // server requests
-    async getTasks(status) {
+    async getTasks(status, sortBy) {
         try {
+            sortBy = sortBy || '';
+
             if (!status) {
-                return await $.get(`/task`);
+                return await $.get(`/task?sort=${sortBy}`);
             }
 
             status = TaskStatusValues[status] || status;
 
-            return await $.get(`/task?status=${status}`);
+            return await $.get(`/task?status=${status}&sort=${sortBy}`);
         } catch (error) {
             console.error("Error fetching tasks:", error);
             if(error.message) {
@@ -199,6 +215,19 @@ const App = {
             });
         });
     },
+    async searchTasks(status, keyword, sortBy) {
+        status = TaskStatusValues[status] || status;
+        keyword = encodeURIComponent(keyword);
+        sortBy = sortBy || '';
+
+        try {
+            return await $.get(`/task?status=${status}&keyword=${keyword}&sort=${sortBy}`);
+        } catch (error) {
+            console.error("Error during search:", error);
+            Toast.error("Failed to fetch tasks. Please try again later.");
+        }
+
+    },
 
     // helper functions
     initDatepicker(element) {
@@ -266,13 +295,28 @@ const App = {
         }
         return null;
     },
-    async renderTaskList(status, tasks) {
+    async renderTaskOnSearch(status, keyword) {
         const taskContainer = App.getTaskContainer(status);
         const loadingSpinner = App.getLoadingSpinner();
         taskContainer.html(loadingSpinner);
 
+        const taskListHtml = await App.searchTasks(status, keyword);
+        taskContainer.html(taskListHtml);
+    },
+    async renderTaskList(status, sortBy) {
+        const taskContainer = App.getTaskContainer(status);
+        const loadingSpinner = App.getLoadingSpinner();
+        taskContainer.html(loadingSpinner);
 
-        const taskListHtml = await App.getTasks(status);
+        let taskListHtml = null;
+
+        sortBy = sortBy || $('#sortBy').val();
+        const keyword = $('#search').val().trim();
+        if (keyword && keyword.length > 0) {
+            taskListHtml = await App.searchTasks(status, keyword, sortBy);
+        } else {
+            taskListHtml = await App.getTasks(status, sortBy);
+        }
 
         taskContainer.html(taskListHtml);
     },
@@ -325,30 +369,54 @@ const App = {
 window.App = App;
 
 $(document).ready(() => {
-    // Initialize task list on page load
-    App.renderTaskList(TaskStatus.PENDING);
+    // Initialize the task list on the page load
+    (async () => {
+        await App.renderTaskList(TaskStatus.PENDING);
+    })()
 
     const taskTabs = Object.values(TaskStatus);
 
-    // Fetch task data on tab change
+    // Fetch task data on status tab change
     taskTabs.forEach(tab => {
         $(document).on('click', `#task-${tab}-tab`, async () => {
             await App.renderTaskList(tab);
         });
     });
 
+    // Search task status on change
+    $(document).on('keyup', '#search', debounce(async function (e) {
+        const $el = $(e.target);
+        const taskStatus = App.getActiveTab();
+        await App.renderTaskOnSearch(taskStatus, $el.val());
+    }, 300));
+
+    // Get sorted task list on sorting change
+    $(document).on('change', '#sortBy', async function (e) {
+        const $el = $(e.target);
+        const taskStatus = App.getActiveTab();
+        await App.renderTaskList(taskStatus, $el.val());
+    });
+
+    // Update task status on change
     $(document).on('change', '.update-status', function (e) {
         const $el = $(e.target);
         const taskId = $el.data('task-id');
         App.updateTaskStatus(taskId, $el.val());
     });
 
-    $(document).on('click', '.edit-task', function (e) {
-        const $el = $(e.currentTarget);
-        const taskId = $el.data('task-id');
-        App.openEditTaskModal(taskId, "#formUpdateTask", "#editTaskModal");
+    // clear search input
+    $(document).on('click', '#clearButton', async function (e) {
+        $('#search').val('').trigger('keyup');
     });
 
+    // Open edit task modal
+    $(document).on('click', '.edit-task', async function (e) {
+        const $el = $(e.currentTarget);
+        const taskId = $el.data('task-id');
+        await App.openEditTaskModal(taskId, "#formUpdateTask", "#editTaskModal");
+    });
+
+    // delete task
     $(document).on('click', '.delete-task', function (e) {
         const $el = $(e.currentTarget);
         const taskId = $el.data('task-id');
@@ -357,6 +425,7 @@ $(document).ready(() => {
         });
     });
 
+    // Add task form submission
     $(document).on('submit', '#formAddTask', function (e) {
         e.preventDefault();
         const $form = $(e.target);
@@ -367,6 +436,7 @@ $(document).ready(() => {
         });
     });
 
+    // Update task form submission
     $(document).on('submit', '#formUpdateTask', function (e) {
         e.preventDefault();
         const $form = $(e.target);

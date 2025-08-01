@@ -27,8 +27,10 @@ class TaskController extends Controller
     public function index(TaskService $taskService)
     {
         $tasks = $taskService->getTasks(
+            auth()->id(),
             request('status'),
-            auth()->id()
+            request('keyword'),
+            request('sort'),
         );
 
         return view('task.list', [
@@ -42,14 +44,21 @@ class TaskController extends Controller
      */
     public function store(TaskStoreRequest $request, TaskService $taskService)
     {
-        $data = $request->validated();
+        try {
+            $data = $request->validated();
 
-        $taskService->createTask($data);
+            $taskService->createTask($data);
 
-        return response([
-            'success' => true,
-            'message' => __('Task added successfully.'),
-        ]);
+            return response([
+                'success' => true,
+                'message' => __('Task added successfully.'),
+            ]);
+        } catch (\Exception $e) {
+            return response([
+                'success' => false,
+                'message' => __('Failed to create task: ') . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -73,14 +82,21 @@ class TaskController extends Controller
     {
         Gate::authorize('update-task', $task);
 
-        $data = $request->validated();
+        try {
+            $data = $request->validated();
 
-        $task->update($data);
+            $task->update($data);
 
-        return response([
-            'success' => true,
-            'message' => __('Task updated successfully.'),
-        ]);
+            return response([
+                'success' => true,
+                'message' => __('Task updated successfully.'),
+            ]);
+        } catch (\Exception $e) {
+            return response([
+                'success' => false,
+                'message' => __('Failed to update task: ') . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -90,25 +106,39 @@ class TaskController extends Controller
     {
         Gate::authorize('delete-task', $task);
 
-        $task->delete();
+        try {
+            $task->delete();
 
-        return response([
-            'success' => true,
-            'message' => __('Task deleted successfully.'),
-        ]);
+            return response([
+                'success' => true,
+                'message' => __('Task deleted successfully.'),
+            ]);
+        } catch (\Exception $e) {
+            return response([
+                'success' => false,
+                'message' => __('Failed to delete task: ') . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function updateStatus(TaskStatusUpdateRequest $request, Task $task)
     {
         Gate::authorize('update-task', $task);
 
-        $data = $request->validated();
+        try {
+            $data = $request->validated();
 
-        $task->update($data);
+            $task->update($data);
 
-        return response([
-            'success' => true,
-            'message' => __('Task status updated successfully.'),
-        ]);
+            return response([
+                'success' => true,
+                'message' => __('Task status updated successfully.'),
+            ]);
+        } catch (\Exception $e) {
+            return response([
+                'success' => false,
+                'message' => __('Failed to update task status: ') . $e->getMessage(),
+            ], 500);
+        }
     }
 }
