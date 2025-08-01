@@ -78,13 +78,16 @@ $(document).ready(function () {
         const oldContainer = existingCard.parent('.kanan-card-container');
         existingCard.remove();
         taskContainer.prepend($taskCard);
+        makeElementDraggable($taskCard);
         updateEmptyBoard(taskContainer);
-        updateOldContainer(oldContainer)
+        updateOldContainer(oldContainer);
     });
 
     $(window).on('delete-task-card', function ({detail}) {
         const existingTask = $(`.kanban-card[data-task-id="${detail.taskId}"]`);
+        const oldContainer = existingTask.parent('.kanan-card-container');
         existingTask.remove();
+        updateOldContainer(oldContainer);
     });
 
     function taskCard(task) {

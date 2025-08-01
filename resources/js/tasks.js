@@ -27,17 +27,21 @@ const SwalConfirm = Swal.mixin({
 });
 
 const Toast = {
-    success: (message) => {
-        iziToast.success({
-            title: 'Success',
-            message: message,
-        });
+    show(type, title, message) {
+        try {
+            iziToast[type]({
+                title,
+                message,
+            });
+        } catch (e) {
+            console.log("Error displaying toast:", e);
+        }
     },
-    error: (message) => {
-        iziToast.error({
-            title: 'Error',
-            message: message,
-        });
+    success(message){
+        this.show("success", "Success", message);
+    },
+    error(message){
+        this.show("error", "Error", message);
     }
 }
 
