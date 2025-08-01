@@ -1,0 +1,383 @@
+import "flatpickr/dist/flatpickr.css";
+
+import flatpickr from "flatpickr";
+import {Modal} from "bootstrap";
+
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+})
+
+iziToast.settings({
+    timeout: 3000,
+    resetOnHover: true,
+    position: 'topRight',
+});
+
+const SwalConfirm = Swal.mixin({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, delete it!"
+});
+
+const Toast = {
+    success: (message) => {
+        iziToast.success({
+            title: 'Success',
+            message: message,
+        });
+    },
+    error: (message) => {
+        iziToast.error({
+            title: 'Error',
+            message: message,
+        });
+    }
+}
+
+const TaskStatus = {
+    PENDING: 'pending',
+    IN_PROGRESS: 'in-progress',
+    COMPLETED: 'completed',
+}
+
+const TaskStatusLabel = {
+    PENDING: 'Pending',
+    IN_PROGRESS: 'In Progress',
+    COMPLETED: 'Completed',
+}
+
+const TaskStatusValues = {
+    [TaskStatus.PENDING]: TaskStatusLabel.PENDING.toLowerCase(),
+    [TaskStatus.IN_PROGRESS]: TaskStatusLabel.IN_PROGRESS.toLowerCase(),
+    [TaskStatus.COMPLETED]: TaskStatusLabel.COMPLETED.toLowerCase(),
+}
+
+const Ajax = {
+    request (url, method = 'GET', data = {}, successCallback, errorCallback) {
+        $.ajax({
+            url: url,
+            type: method,
+            data: data || {},
+            success: (response) => {
+                successCallback(response);
+            },
+            error: (error) => {
+                console.error(error);
+                if (errorCallback) {
+                    errorCallback(error);
+                    return;
+                }
+
+                Ajax.errorCallback(error);
+            }
+        });
+    },
+    errorCallback (error) {
+        if (error.message) {
+            Toast.error(error.message);
+            return;
+        }
+        Toast.error("Something went wrong during server request.");
+    },
+    put(url, data, successCallback, errorCallback) {
+        Ajax.request(url, 'PUT', data, successCallback, errorCallback);
+    },
+    post(url, data, successCallback, errorCallback) {
+        Ajax.request(url, 'POST', data, successCallback, errorCallback);
+    },
+    delete(url, data, successCallback, errorCallback) {
+        Ajax.request(url, 'DELETE', data, successCallback, errorCallback);
+    }
+}
+
+const App = {
+    // server requests
+    async getTasks(status) {
+        try {
+            if (!status) {
+                return await $.get(`/task`);
+            }
+
+            status = TaskStatusValues[status] || status;
+
+            return await $.get(`/task?status=${status}`);
+        } catch (error) {
+            console.error("Error fetching tasks:", error);
+            if(error.message) {
+                Toast.error(error.message);
+                return;
+            }
+            Toast.error("Failed to fetch data. Please try again later.");
+            throw error;
+        }
+    },
+    async getTask(taskId) {
+        if (!taskId) {
+            throw new Error("Task ID is required to fetch task details.");
+        }
+
+        const response = await $.get(`/task/${taskId}`);
+        if (response.success) {
+            return response.data;
+        }
+        Toast.error(response.message || "Failed to fetch task details.");
+
+        return null;
+    },
+    updateTaskStatus(taskId, status) {
+        Ajax.put(`/task/${taskId}/update-status`, {status}, async function (response) {
+            if (response.success) {
+                await App.onSuccess(response);
+            } else {
+                Toast.error(response.message);
+            }
+        });
+    },
+    addTask(formData, formEl, callback) {
+        Ajax.post(`/task`, formData, async function (response) {
+            if (response.success) {
+                await App.onSuccess(response);
+                App.resetForm(formEl);
+                callback();
+            } else {
+                Toast.error(response.message);
+            }
+        }, function (error) {
+            if (error.responseJSON) {
+                const errorObj = error.responseJSON;
+                const formErrors = errorObj.errors || {};
+                App.showFormErrors(formErrors, formEl);
+                Toast.error("Please fill all required fields correctly.");
+                return;
+            }
+            Toast.error("Something went wrong while adding the task.");
+
+            throw error;
+        })
+    },
+    updateTask(formData, formEl, callback) {
+        Ajax.put(formEl.action, formData, async function (response) {
+            if (response.success) {
+                await App.onSuccess(response);
+                App.resetForm(formEl);
+                callback();
+            } else {
+                Toast.error(response.message);
+            }
+        }, function (error) {
+            if (error.responseJSON) {
+                const errorObj = error.responseJSON;
+                const formErrors = errorObj.errors || {};
+                App.showFormErrors(formErrors, formEl);
+                Toast.error("Please fill all required fields correctly.");
+                return;
+            }
+            Toast.error("Something went wrong while adding the task.");
+
+            throw error;
+        })
+    },
+    async deleteTask(taskId) {
+        return new Promise((resolve, reject) => {
+            Ajax.delete(`/task/${taskId}`, {}, async function (response) {
+                if (response.success) {
+                    await App.onSuccess(response);
+                    resolve(response);
+                } else {
+                    Toast.error(response.message);
+                    reject(response);
+                }
+            }, function (error) {
+                Toast.error("Something went wrong while deleting the task.");
+                reject(error);
+            });
+        });
+    },
+
+    // helper functions
+    initDatepicker(element) {
+        flatpickr(element, {
+            enableTime: false,
+            dateFormat: "Y-m-d",
+            allowInput: false,
+            clickOpens: true,
+            altInput: true,
+            altFormat: "F j, Y",
+        })
+    },
+    resetForm(formEl) {
+        this.removeFormErrors(formEl);
+        formEl.reset();
+    },
+    removeFormErrors(formEl) {
+        $(formEl).find('.error-message').remove();
+        $(formEl).find('.invalid-feedback').remove();
+        $(formEl).find('.is-invalid').removeClass('is-invalid');
+    },
+    showFormErrors(formErrors, formEl) {
+        const $form = $(formEl);
+        this.removeFormErrors(formEl);
+        for (const [field, errors] of Object.entries(formErrors)) {
+            const $input = $form.find(`[name="${field}"]`);
+            if ($input.length) {
+                $input.addClass('is-invalid');
+                const errorHtml = `<div class="invalid-feedback">${errors.join(', ')}</div>`;
+                $input.after(errorHtml);
+            }
+        }
+        $form.find('.datepicker').each((_, el) => {
+            const $elem = $(el);
+            if ($elem.hasClass('is-invalid')) {
+                $elem.removeClass('is-invalid');
+                $elem.next('.invalid-feedback').remove();
+            }
+        });
+        $form.find('.datepicker.flatpickr-input').each((_, el) => {
+            const errors = formErrors[el.name] || [];
+            $(el).next('.border-danger');
+            $(el).parent().append(
+                `<div class="small error-message text-danger">${errors.join(', ')}</div>`
+            );
+        });
+    },
+    async onSuccess(response) {
+        Toast.success(response.message);
+        await App.renderTaskList(App.getActiveTab());
+    },
+    getTaskContainer(status) {
+        return $(`#task-${status}`);
+    },
+    getLoadingSpinner() {
+        return `<div class="text-center d-flex flex-column align-items-center gap-2 py-4">
+            <div class="spinner-border" role="status"></div>
+            <span class="sr-only fs-5">Fetching Tasks...</span>
+        </div>`;
+    },
+    getActiveTab() {
+        const activeTab = $('#task-tab .nav-link.active');
+        if (activeTab.length) {
+            return activeTab.data('task-status');
+        }
+        return null;
+    },
+    async renderTaskList(status, tasks) {
+        const taskContainer = App.getTaskContainer(status);
+        const loadingSpinner = App.getLoadingSpinner();
+        taskContainer.html(loadingSpinner);
+
+
+        const taskListHtml = await App.getTasks(status);
+
+        taskContainer.html(taskListHtml);
+    },
+    confirmAlert(message, callback, confirmCallback) {
+        SwalConfirm.fire({
+            text: message,
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                return new Promise(async (resolve) => {
+                    await callback();
+                    resolve();
+                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed && confirmCallback) {
+                confirmCallback();
+            }
+        }).catch((error) => {
+            console.error("Error in confirmation:", error);
+            Toast.error("Something went wrong during confirmation.");
+        })
+    },
+    setFormValues(data, formEl) {
+        Object.entries(data).map(([key, value]) => {
+            const $input = $(formEl).find(`[name="${key}"]`);
+            if ($input) {
+                $input.val(value);
+                if ($input.hasClass('datepicker')) {
+                    const instance = $input[0]._flatpickr
+                    if (instance) {
+                        instance.setDate(value, true);
+                    } else {
+                        App.initDatepicker($input[0]);
+                    }
+                }
+            }
+        });
+    },
+    async openEditTaskModal(taskId, formId, modalId) {
+        const task = await App.getTask(taskId);
+        if (task) {
+            const { id, created_at, updated_at, ...taskData } = task;
+            this.setFormValues(taskData, formId);
+            $(formId).attr('action', `/task/${id}`);
+            Modal.getOrCreateInstance(modalId).show();
+        }
+    }
+}
+
+window.App = App;
+
+$(document).ready(() => {
+    // Initialize task list on page load
+    App.renderTaskList(TaskStatus.PENDING);
+
+    const taskTabs = Object.values(TaskStatus);
+
+    // Fetch task data on tab change
+    taskTabs.forEach(tab => {
+        $(document).on('click', `#task-${tab}-tab`, async () => {
+            await App.renderTaskList(tab);
+        });
+    });
+
+    $(document).on('change', '.update-status', function (e) {
+        const $el = $(e.target);
+        const taskId = $el.data('task-id');
+        App.updateTaskStatus(taskId, $el.val());
+    });
+
+    $(document).on('click', '.edit-task', function (e) {
+        const $el = $(e.currentTarget);
+        const taskId = $el.data('task-id');
+        App.openEditTaskModal(taskId, "#formUpdateTask", "#editTaskModal");
+    });
+
+    $(document).on('click', '.delete-task', function (e) {
+        const $el = $(e.currentTarget);
+        const taskId = $el.data('task-id');
+        App.confirmAlert('Are you sure you want to delete this task?', async () => {
+            await App.deleteTask(taskId);
+        });
+    });
+
+    $(document).on('submit', '#formAddTask', function (e) {
+        e.preventDefault();
+        const $form = $(e.target);
+        const formData = $form.serialize();
+
+        App.addTask(formData, $form[0], function () {
+            Modal.getOrCreateInstance('#addTaskModal').hide();
+        });
+    });
+
+    $(document).on('submit', '#formUpdateTask', function (e) {
+        e.preventDefault();
+        const $form = $(e.target);
+        const formData = $form.serialize();
+
+        App.updateTask(formData, $form[0], function () {
+            Modal.getOrCreateInstance('#editTaskModal').hide();
+        });
+    });
+
+    // Initialize flatpickr for date inputs
+    App.initDatepicker(".datepicker");
+
+});

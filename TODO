@@ -1,0 +1,40 @@
+✅ Task 2: Logical + Functional Test – Laravel & JS Application
+Title: Build a Simple Task Management Module
+
+Instructions:
+
+Create a mini Laravel project where:
+
+Users can create, view, update, and delete Tasks.
+
+Each task has: title, description, status (pending/in progress/completed), and due date.
+
+Use AJAX (jQuery) to update the task's status inline without page reload.
+
+Display tasks grouped by status using Bootstrap Tabs or Cards (Kanban style is a plus).
+
+Add validation (Laravel request rules) and error handling.
+
+Bonus: Add search/filter by title or status.
+
+Technical Requirements:
+
+Use Laravel 10 or above
+
+Use SQLite or MySQL
+
+Use Bootstrap 5 for UI
+
+Follow MVC pattern and Laravel best practices
+
+Evaluation Criteria:
+
+Laravel architecture and logic
+
+Use of JavaScript/AJAX
+
+Clean database queries (can be raw or Eloquent)
+
+UI organization and UX
+
+Code structure, comments, and reusability
