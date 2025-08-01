@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TaskStatus;
+use App\Services\TaskService;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -17,15 +18,18 @@ class HomeController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
     public function index()
     {
         return view('home', [
             'allTaskStatus' => TaskStatus::options(),
+        ]);
+    }
+
+    public function kanban(TaskService $taskService)
+    {
+        return view('kanban', [
+            'allTaskStatus' => TaskStatus::options(),
+            'tasks' => $taskService->getTasks(auth()->id()),
         ]);
     }
 }

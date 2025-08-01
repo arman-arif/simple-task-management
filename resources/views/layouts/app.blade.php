@@ -7,7 +7,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name') }}</title>
+    <title>@isset($title) {{ $title }} - @endisset {{ config('app.name') }}</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -32,7 +32,12 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
-
+                        <li class="nav-item">
+                            <a href="{{ route('home') }}" class="nav-link">{{ __("Tasks") }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('kanban') }}" class="nav-link">{{ __("Kanban") }}</a>
+                        </li>
                     </ul>
 
                     <!-- Right Side Of Navbar -->

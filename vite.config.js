@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/sass/app.scss',
                 'resources/js/app.js',
                 'resources/js/tasks.js',
+                'resources/js/kanban.js',
             ],
             refresh: true,
         }),

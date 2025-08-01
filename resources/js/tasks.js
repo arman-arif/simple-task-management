@@ -146,19 +146,29 @@ const App = {
 
         return null;
     },
-    updateTaskStatus(taskId, status) {
+    updateTaskStatus(taskId, status, render = true) {
         Ajax.put(`/task/${taskId}/update-status`, {status}, async function (response) {
             if (response.success) {
-                await App.onSuccess(response);
+                await App.onSuccess(response, render);
             } else {
                 Toast.error(response.message);
             }
         });
     },
     addTask(formData, formEl, callback) {
+        const formDataObj = Object.fromEntries(formData.map(item => [item.name, item.value]));
         Ajax.post(`/task`, formData, async function (response) {
+            const render = formDataObj.kanban == 1 ? false : true;
             if (response.success) {
-                await App.onSuccess(response);
+                if (!render) {
+                    dispatchEvent(new CustomEvent('update-kanban', {
+                        detail: {
+                            task: response.data,
+                            status: formDataObj.status
+                        }
+                    }));
+                }
+                await App.onSuccess(response, render);
                 App.resetForm(formEl);
                 callback();
             } else {
@@ -275,9 +285,11 @@ const App = {
             );
         });
     },
-    async onSuccess(response) {
+    async onSuccess(response, render = true) {
         Toast.success(response.message);
-        await App.renderTaskList(App.getActiveTab());
+        if (render) {
+            await App.renderTaskList(App.getActiveTab());
+        }
     },
     getTaskContainer(status) {
         return $(`#task-${status}`);
@@ -366,12 +378,23 @@ const App = {
     }
 }
 
+window.iziToast = iziToast;
+window.Swal = Swal;
+window.TaskStatus = TaskStatus;
+window.TaskStatusLabel = TaskStatusLabel;
+window.TaskStatusValues = TaskStatusValues;
+window.Toast = Toast;
+window.SwalConfirm = SwalConfirm;
+window.debounce = debounce;
+window.Ajax = Ajax;
 window.App = App;
 
 $(document).ready(() => {
     // Initialize the task list on the page load
     (async () => {
-        await App.renderTaskList(TaskStatus.PENDING);
+        if (App.getActiveTab()) {
+            await App.renderTaskList(TaskStatus.PENDING);
+        }
     })()
 
     const taskTabs = Object.values(TaskStatus);
@@ -429,7 +452,7 @@ $(document).ready(() => {
     $(document).on('submit', '#formAddTask', function (e) {
         e.preventDefault();
         const $form = $(e.target);
-        const formData = $form.serialize();
+        const formData = $form.serializeArray();
 
         App.addTask(formData, $form[0], function () {
             Modal.getOrCreateInstance('#addTaskModal').hide();

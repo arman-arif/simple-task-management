@@ -17,9 +17,11 @@
     },
     "dependencies": {
         "bootstrap-icons": "^1.13.1",
+        "dayjs": "^1.11.13",
         "flatpickr": "^4.6.13",
         "izitoast": "^1.4.0",
         "jquery": "^3.7.1",
+        "jquery-ui": "^1.14.1",
         "sweetalert2": "^11.22.2"
     }
 }

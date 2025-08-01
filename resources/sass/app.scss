@@ -6,3 +6,19 @@
 
 // Bootstrap
 @import 'bootstrap/scss/bootstrap';
+
+.ui-droppable-hover {
+    padding-top: 200px;
+    transition: padding-top 0.3s ease-in-out;
+}
+
+.ui-draggable {
+    z-index: 999;
+
+    .card-head, .card-body {
+        cursor: move;
+    }
+    .task-content {
+        cursor: default;
+    }
+}

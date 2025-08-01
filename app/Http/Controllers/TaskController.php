@@ -47,11 +47,12 @@ class TaskController extends Controller
         try {
             $data = $request->validated();
 
-            $taskService->createTask($data);
+            $task = $taskService->createTask($data);
 
             return response([
                 'success' => true,
                 'message' => __('Task added successfully.'),
+                'data' => $task->toArray(),
             ]);
         } catch (\Exception $e) {
             return response([
