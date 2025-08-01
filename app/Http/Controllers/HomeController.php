@@ -29,7 +29,7 @@ class HomeController extends Controller
     {
         return view('kanban', [
             'allTaskStatus' => TaskStatus::options(),
-            'tasks' => $taskService->getTasks(auth()->id()),
+            'tasks' => $taskService->getTasks(auth()->id(), sort: "latest"),
         ]);
     }
 }

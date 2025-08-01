@@ -116,7 +116,7 @@ const App = {
         try {
             sortBy = sortBy || '';
 
-            if (!status) {
+            if (!status || status === 'all') {
                 return await $.get(`/task?sort=${sortBy}`);
             }
 
@@ -188,9 +188,19 @@ const App = {
         })
     },
     updateTask(formData, formEl, callback) {
+        const formDataObj = Object.fromEntries(formData.map(item => [item.name, item.value]));
         Ajax.put(formEl.action, formData, async function (response) {
+            const render = formDataObj.kanban == 1 ? false : true;
             if (response.success) {
-                await App.onSuccess(response);
+                if (!render) {
+                    dispatchEvent(new CustomEvent('update-task-card', {
+                        detail: {
+                            task: response.data,
+                            status: formDataObj.status
+                        }
+                    }));
+                }
+                await App.onSuccess(response, render);
                 App.resetForm(formEl);
                 callback();
             } else {
@@ -209,11 +219,16 @@ const App = {
             throw error;
         })
     },
-    async deleteTask(taskId) {
+    async deleteTask(taskId, render = true) {
         return new Promise((resolve, reject) => {
             Ajax.delete(`/task/${taskId}`, {}, async function (response) {
                 if (response.success) {
-                    await App.onSuccess(response);
+                    if (!render) {
+                        dispatchEvent(new CustomEvent('delete-task-card', {
+                            detail: { taskId }
+                        }));
+                    }
+                    await App.onSuccess(response, render);
                     resolve(response);
                 } else {
                     Toast.error(response.message);
@@ -231,6 +246,9 @@ const App = {
         sortBy = sortBy || '';
 
         try {
+            if (!status || status === 'all') {
+                return await $.get(`/task?keyword=${keyword}&sort=${sortBy}`);
+            }
             return await $.get(`/task?status=${status}&keyword=${keyword}&sort=${sortBy}`);
         } catch (error) {
             console.error("Error during search:", error);
@@ -405,6 +423,9 @@ $(document).ready(() => {
             await App.renderTaskList(tab);
         });
     });
+    $(document).on('click', `#task-all-tab`, async () => {
+        await App.renderTaskList('all');
+    });
 
     // Search task status on change
     $(document).on('keyup', '#search', debounce(async function (e) {
@@ -444,7 +465,8 @@ $(document).ready(() => {
         const $el = $(e.currentTarget);
         const taskId = $el.data('task-id');
         App.confirmAlert('Are you sure you want to delete this task?', async () => {
-            await App.deleteTask(taskId);
+            const isKanban = $el.data('kanban') == 1;
+            await App.deleteTask(taskId, !isKanban);
         });
     });
 
@@ -463,7 +485,7 @@ $(document).ready(() => {
     $(document).on('submit', '#formUpdateTask', function (e) {
         e.preventDefault();
         const $form = $(e.target);
-        const formData = $form.serialize();
+        const formData = $form.serializeArray();
 
         App.updateTask(formData, $form[0], function () {
             Modal.getOrCreateInstance('#editTaskModal').hide();

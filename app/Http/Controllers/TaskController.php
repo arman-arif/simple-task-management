@@ -91,6 +91,7 @@ class TaskController extends Controller
             return response([
                 'success' => true,
                 'message' => __('Task updated successfully.'),
+                'data' => $task->toArray(),
             ]);
         } catch (\Exception $e) {
             return response([

@@ -34,13 +34,18 @@ $(document).ready(function () {
         }, 100);
     }
 
-    $('.kanban-board .kanban-card').draggable({
-        cancel: ".task-content",
-        containment: 'document',
-        revert: "invalid",
-        helper: "clone",
-        cursor: "move"
-    });
+    function makeElementDraggable(element) {
+        $(element).draggable({
+            cancel: ".task-content",
+            containment: 'document',
+            revert: "invalid",
+            helper: "clone",
+            cursor: "move"
+        });
+    }
+
+    makeElementDraggable('.kanban-board .kanban-card');
+
     $( '.kanban-board .kanan-card-container' ).droppable({
         accept: ".kanban-card",
         drop: function( event, ui ) {
@@ -59,13 +64,32 @@ $(document).ready(function () {
     $(window).on('update-kanban', function ({detail}) {
         const statusSlug = detail.status.replaceAll(' ', '-');
         const taskContainer = $(`#${statusSlug}-card-container`);
-        taskContainer.prepend(taskCard(detail.task));
+        const $taskCard = taskCard(detail.task);
+        taskContainer.prepend($taskCard);
+        makeElementDraggable($taskCard);
         updateEmptyBoard(taskContainer);
     });
 
+    $(window).on('update-task-card', function ({detail}) {
+        const statusSlug = detail.status.replaceAll(' ', '-');
+        const taskContainer = $(`#${statusSlug}-card-container`);
+        const $taskCard = taskCard(detail.task);
+        const existingCard = $(`.kanban-card[data-task-id="${detail.task.id}"]`);
+        const oldContainer = existingCard.parent('.kanan-card-container');
+        existingCard.remove();
+        taskContainer.prepend($taskCard);
+        updateEmptyBoard(taskContainer);
+        updateOldContainer(oldContainer)
+    });
+
+    $(window).on('delete-task-card', function ({detail}) {
+        const existingTask = $(`.kanban-card[data-task-id="${detail.taskId}"]`);
+        existingTask.remove();
+    });
+
     function taskCard(task) {
-        return `
-            <div class="card {{ empty($kanban) ? '' : 'kanban-card' }}" data-task-id="${task.id}">
+        return $(`
+            <div class="card kanban-card" data-task-id="${task.id}">
                 <div class="card-header d-flex align-items-center">
                     <h6 class="mb-0 fw-bold">${task.title}</h6>
                 </div>
@@ -75,10 +99,10 @@ $(document).ready(function () {
 
                         <div class="d-flex justify-content-between flex-column mt-3">
                             <div class="text-muted small">
-                                Created: ${dayjs(task.created_at).toNow()}
+                                Created: ${dayjs(task.created_at).fromNow()}
                             </div>
                             <div class="text-muted small">
-                                Updated: ${dayjs(task.updated_at).toNow()}
+                                Updated: ${dayjs(task.updated_at).fromNow()}
                             </div>
                             <div class="text-muted small">
                                 Due on: ${dayjs(task.due_date).format("ddd, DD MMM YYYY")}
@@ -96,7 +120,7 @@ $(document).ready(function () {
                     </div>
                 </div>
             </div>
-        `
+        `)
     }
 
 });

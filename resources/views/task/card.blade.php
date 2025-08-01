@@ -24,7 +24,7 @@
                 <button type="button" class="btn btn-sm btn-secondary edit-task" data-task-id="{{ $task->id }}">
                     <i class="bi bi-pencil"></i> Edit
                 </button>
-                <button type="button" class="btn btn-sm btn-danger delete-task" data-task-id="{{ $task->id }}">
+                <button type="button" class="btn btn-sm btn-danger delete-task" data-task-id="{{ $task->id }}" data-kanban="{{ !empty($kanban) }}">
                     <i class="bi bi-trash"></i> Delete
                 </button>
             </div>

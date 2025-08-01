@@ -23,6 +23,13 @@
                     @endif
 
                     <ul class="nav nav-pills gap-2 mb-3" id="task-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="task-all-tab" data-bs-toggle="pill"
+                                    data-bs-target="#task-all" type="button" role="tab" aria-controls="task-all"
+                                    data-task-status="all"
+                                    aria-selected="false">All
+                            </button>
+                        </li>
                         @foreach($allTaskStatus as $statusValue => $taskStatus)
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link {{ $loop->index == 0 ? "active" : "" }}" id="task-{{Str::slug($taskStatus)}}-tab" data-bs-toggle="pill"
@@ -49,6 +56,12 @@
                         </div>
                     </div>
                     <div class="tab-content" id="task-tabContent">
+                        <div class="tab-pane fade" id="task-all" role="tabpanel"
+                             aria-labelledby="task-all-tab" tabindex="0">
+                            <div class="text-center py-4">
+                                No tasks available.
+                            </div>
+                        </div>
                         @foreach($allTaskStatus as $taskStatus)
                             <div class="tab-pane fade {{ $loop->index == 0 ? "show active" : "" }}" id="task-{{Str::slug($taskStatus)}}" role="tabpanel"
                                  aria-labelledby="task-{{Str::slug($taskStatus)}}-tab" tabindex="0">
