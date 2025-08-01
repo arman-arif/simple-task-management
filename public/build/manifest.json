@@ -1,0 +1,99 @@
+{
+  "__commonjsHelpers-Cpj98o6Y.js": {
+    "file": "assets/_commonjsHelpers-Cpj98o6Y.js",
+    "name": "_commonjsHelpers"
+  },
+  "_bootstrap.esm-DAYTqP2D.js": {
+    "file": "assets/bootstrap.esm-DAYTqP2D.js",
+    "name": "bootstrap.esm"
+  },
+  "node_modules/.pnpm/bootstrap-icons@1.13.1/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": {
+    "file": "assets/bootstrap-icons-BeopsB42.woff",
+    "src": "node_modules/.pnpm/bootstrap-icons@1.13.1/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff"
+  },
+  "node_modules/.pnpm/bootstrap-icons@1.13.1/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2": {
+    "file": "assets/bootstrap-icons-mSm7cUeB.woff2",
+    "src": "node_modules/.pnpm/bootstrap-icons@1.13.1/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2"
+  },
+  "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_444444_256x240.png": {
+    "file": "assets/ui-icons_444444_256x240-Dk5IcB_d.png",
+    "src": "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_444444_256x240.png"
+  },
+  "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_555555_256x240.png": {
+    "file": "assets/ui-icons_555555_256x240-485P4mAP.png",
+    "src": "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_555555_256x240.png"
+  },
+  "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_777620_256x240.png": {
+    "file": "assets/ui-icons_777620_256x240-SbJVJ09b.png",
+    "src": "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_777620_256x240.png"
+  },
+  "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_777777_256x240.png": {
+    "file": "assets/ui-icons_777777_256x240-DfsHT_a3.png",
+    "src": "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_777777_256x240.png"
+  },
+  "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_cc0000_256x240.png": {
+    "file": "assets/ui-icons_cc0000_256x240-CPK_pixI.png",
+    "src": "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_cc0000_256x240.png"
+  },
+  "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_ffffff_256x240.png": {
+    "file": "assets/ui-icons_ffffff_256x240-DoIcE4o8.png",
+    "src": "node_modules/.pnpm/jquery-ui@1.14.1/node_modules/jquery-ui/dist/themes/base/images/ui-icons_ffffff_256x240.png"
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-k8nsr-Se.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers-Cpj98o6Y.js",
+      "_bootstrap.esm-DAYTqP2D.js"
+    ],
+    "css": [
+      "assets/app-BwZ2KWrQ.css"
+    ],
+    "assets": [
+      "assets/bootstrap-icons-mSm7cUeB.woff2",
+      "assets/bootstrap-icons-BeopsB42.woff"
+    ]
+  },
+  "resources/js/kanban.js": {
+    "file": "assets/kanban-C62K1iVK.js",
+    "name": "kanban",
+    "src": "resources/js/kanban.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers-Cpj98o6Y.js"
+    ],
+    "css": [
+      "assets/kanban-G1gT9A8F.css"
+    ],
+    "assets": [
+      "assets/ui-icons_444444_256x240-Dk5IcB_d.png",
+      "assets/ui-icons_555555_256x240-485P4mAP.png",
+      "assets/ui-icons_ffffff_256x240-DoIcE4o8.png",
+      "assets/ui-icons_777620_256x240-SbJVJ09b.png",
+      "assets/ui-icons_cc0000_256x240-CPK_pixI.png",
+      "assets/ui-icons_777777_256x240-DfsHT_a3.png"
+    ]
+  },
+  "resources/js/tasks.js": {
+    "file": "assets/tasks-BMjRwLjr.js",
+    "name": "tasks",
+    "src": "resources/js/tasks.js",
+    "isEntry": true,
+    "imports": [
+      "_bootstrap.esm-DAYTqP2D.js"
+    ],
+    "css": [
+      "assets/tasks-BsM4JrO0.css"
+    ]
+  },
+  "resources/sass/app.scss": {
+    "file": "assets/app-Bu59Dod-.css",
+    "src": "resources/sass/app.scss",
+    "isEntry": true,
+    "names": [
+      "app.css"
+    ]
+  }
+}
