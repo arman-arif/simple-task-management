@@ -31,6 +31,7 @@
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
+                    @auth()
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a href="{{ route('home') }}" class="nav-link">{{ __("Tasks") }}</a>
@@ -39,6 +40,7 @@
                             <a href="{{ route('kanban') }}" class="nav-link">{{ __("Kanban") }}</a>
                         </li>
                     </ul>
+                    @endauth
 
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto">
